@@ -4,14 +4,14 @@ cloud:
       static: US_EAST_1
       auto: false
     credentials:
-      access-key: AKIASQVR6LKQRBWHSGBX 
-      secret-key: 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
+      access-key:  
+      secret-key: 
     end-point:
-      uri: https://sqs.us-east-1.amazonaws.com/173245618849/SkillCertQueue
+      uri: 
       
 application:
   bucket:
-    name: skillcertbucket
+    name: 
 
 
 spring:
