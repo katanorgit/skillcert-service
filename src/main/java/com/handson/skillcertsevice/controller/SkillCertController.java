@@ -63,12 +63,12 @@ public class SkillCertController {
 	}
 
 	
-	public String sendNotificationIfCertDeleted(String certificateName) {
+	public String sendNotificationIfCertAdded(String certificateName) {
 		PublishRequest publishRequest = new PublishRequest(TOPIC_ARN, buildEmailBodyForAddCertificate(certificateName), "Certification details");
 		snsClient.publish(publishRequest);
 		return "Notification send successfully !!";
 	}
-	public String sendNotificationIfCertAdded(String certificateName) {
+	public String sendNotificationIfCertDeleted(String certificateName) {
 		PublishRequest publishRequest = new PublishRequest(TOPIC_ARN, buildEmailBodyForDeleteCertificate(certificateName), "Certification details");
 		snsClient.publish(publishRequest);
 		return "Notification send successfully !!";
@@ -84,7 +84,7 @@ public class SkillCertController {
 	public ResponseEntity<String> uploadFile(@RequestParam(value = "file") MultipartFile file) {
 		ResponseEntity<String> responseEntity = new ResponseEntity<>(certificateUpload.uploadFile(file), HttpStatus.OK);
 		if(responseEntity.getStatusCode()==HttpStatus.OK) {
-			sendNotification(file.getOriginalFilename());
+			sendNotificationIfCertAdded(file.getOriginalFilename());
 		}
 		return responseEntity;
 	}
@@ -102,7 +102,7 @@ public class SkillCertController {
 	public ResponseEntity<String> deleteFile(@PathVariable String fileName) {
 		 ResponseEntity<String> responseEntity = new ResponseEntity<>(certificateUpload.deleteFile(fileName), HttpStatus.OK);
 		if(responseEntity.getStatusCode()==HttpStatus.OK) {
-			sendNotification(fileName);
+			sendNotificationIfCertDeleted(fileName);
 		}
 		return responseEntity;
 	}
