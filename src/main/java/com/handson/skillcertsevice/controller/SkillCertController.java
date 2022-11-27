@@ -62,20 +62,31 @@ public class SkillCertController {
 		return "Subscription request is pending. To confirm the subscription, check your email : " + email;
 	}
 
-	@GetMapping("/sendNotification")
-	public String publishMessageToTopic() {
-		PublishRequest publishRequest = new PublishRequest(TOPIC_ARN, buildEmailBody(), "Certification details");
+	
+	public String sendNotificationIfCertDeleted(String certificateName) {
+		PublishRequest publishRequest = new PublishRequest(TOPIC_ARN, buildEmailBodyForAddCertificate(certificateName), "Certification details");
 		snsClient.publish(publishRequest);
 		return "Notification send successfully !!";
 	}
-
-	private String buildEmailBody() {
-		return "Employee uploaded new certificate please validate";
+	public String sendNotificationIfCertAdded(String certificateName) {
+		PublishRequest publishRequest = new PublishRequest(TOPIC_ARN, buildEmailBodyForDeleteCertificate(certificateName), "Certification details");
+		snsClient.publish(publishRequest);
+		return "Notification send successfully !!";
+	}
+	private String buildEmailBodyForAddCertificate(String name) {
+		return "New Certification "+ name + "has been added to skillcert portal.";
+	}
+	private String buildEmailBodyForDeleteCertificate(String name) {
+		return "Certification "+ name + "has been deleted from skillcert portal.";
 	}
 
 	@PostMapping("/upload")
 	public ResponseEntity<String> uploadFile(@RequestParam(value = "file") MultipartFile file) {
-		return new ResponseEntity<>(certificateUpload.uploadFile(file), HttpStatus.OK);
+		ResponseEntity<String> responseEntity = new ResponseEntity<>(certificateUpload.uploadFile(file), HttpStatus.OK);
+		if(responseEntity.getStatusCode()==HttpStatus.OK) {
+			sendNotification(file.getOriginalFilename());
+		}
+		return responseEntity;
 	}
 
 	@GetMapping("/download/{fileName}")
@@ -89,7 +100,11 @@ public class SkillCertController {
 
 	@GetMapping("/delete/{fileName}")
 	public ResponseEntity<String> deleteFile(@PathVariable String fileName) {
-		return new ResponseEntity<>(certificateUpload.deleteFile(fileName), HttpStatus.OK);
+		 ResponseEntity<String> responseEntity = new ResponseEntity<>(certificateUpload.deleteFile(fileName), HttpStatus.OK);
+		if(responseEntity.getStatusCode()==HttpStatus.OK) {
+			sendNotification(fileName);
+		}
+		return responseEntity;
 	}
 
 	@GetMapping("/getListOfS3Objects")
